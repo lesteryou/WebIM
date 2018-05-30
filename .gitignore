@@ -1,0 +1,11 @@
+/vendor
+/.idea
+.idea
+.project
+composer.phar
+/config/database.php
+/data/cache/views/
+!/data/cache/views/.gitkeep
+/data/logs/
+!/data/logs/.gitkeep
+/public/captcha/
