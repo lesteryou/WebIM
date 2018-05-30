@@ -16,5 +16,14 @@ $app->group('/pass', function () {
  * main
  */
 $app->group('/main', function () {
+    $this->get('/init', Controllers\MainController::class . ':init');
     $this->get('/group/members', Controllers\GroupController::class . ':listMembers');
+});
+
+/**
+ * upload
+ */
+$app->group('/upload', function () {
+    $this->post('/image', Controllers\UploadController::class . ':image');
+    $this->post('/file', Controllers\UploadController::class . ':file');
 });

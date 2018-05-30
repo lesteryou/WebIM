@@ -57,21 +57,22 @@
             layim.config({
                 //初始化接口
                 init: {
-                    url: '/statics/getList.json'
+                    url: '/main/init'
+                    ,type:'get'
                     , data: {}
                 }
                 //查看群员接口
                 , members: {
-                    url: '/layim/json/getMembers.json'
+                    url: '/main/group/members'
                     , data: {}
                 }
 
                 , uploadImage: {
-                    url: '' //（返回的数据格式见下文）
+                    url: '/upload/image' //（返回的数据格式见下文）
                     , type: '' //默认post
                 }
                 , uploadFile: {
-                    url: '' //（返回的数据格式见下文）
+                    url: '/upload/file' //（返回的数据格式见下文）
                     , type: '' //默认post
                 }
 

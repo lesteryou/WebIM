@@ -43,10 +43,6 @@ $app->group('/utils', function () use ($app) {
     return $response;
 });
 
-/**
- * 使用 控制器类
- */
-$app->get('/Hello/ControllerClass', App\Http\Controllers\ExampleController::class . ':Index');
 
 /**
  * end routing example

@@ -55,7 +55,6 @@ class PassController extends Controller
         $Verify = new Verify();
         !($Verify->check($formData['captcha'])) && TEA('605');
 
-
         //使用名称获取用户信息
         $userInfo = $this->model->getUserInfoByEmail($formData['username']);
         //用户不存在
