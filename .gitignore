@@ -9,3 +9,4 @@ composer.phar
 /data/logs/
 !/data/logs/.gitkeep
 /public/captcha/
+/swoole/vendor/

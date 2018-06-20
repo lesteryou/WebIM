@@ -8,7 +8,8 @@ $container['view'] = function (\Slim\Container $c) {
     $settings = $c->get('settings')['twig_view'];
     $view = new \Slim\Views\Twig($settings['template_path'], [
 //        'cache' => $settings['cache']
-        'cache' => false
+        'cache' => false,
+        'debug' => true
     ]);
 
     // Instantiate and add Slim specific extension

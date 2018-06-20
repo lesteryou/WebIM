@@ -118,3 +118,25 @@ function encrypted_password($clear_text_password, $salt = '$WebiM32#&*!')
 {
     return md5($clear_text_password . $salt);
 }
+
+function create_token($uid)
+{
+    return md5($uid . '@_#$' . time());
+}
+
+function trim_params(&$data)
+{
+    if (is_array($data)) {
+        foreach ($data as &$value) {
+            trim_params($value);
+        }
+    } else {
+        if (is_string($data)) {
+            trim($data);
+        }
+        if (is_numeric($data)) {
+            intval($data);
+        }
+    }
+    return $data;
+}

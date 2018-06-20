@@ -39,7 +39,7 @@ class Upload
     public function __construct($config = array())
     {
         foreach ($config as $k => $v) {
-            $this->{$k} = $v;
+            isset($this->{$k}) && $this->{$k} = $v;
         }
     }
 

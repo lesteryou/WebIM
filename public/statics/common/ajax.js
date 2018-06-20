@@ -2,7 +2,7 @@
  * 获取数据ajax-get请求
  * @author laixm
  */
-$.getJSON = function (url, data, callback) {
+getJSON = function (url, data, callback) {
     $.ajax({
         url: url,
         type: "get",
@@ -20,7 +20,7 @@ $.getJSON = function (url, data, callback) {
  * 提交json数据的post请求
  * @author laixm
  */
-$.postJSON = function (url, data, callback) {
+postJSON = function (url, data, callback) {
     $.ajax({
         url: url,
         type: "post",
@@ -32,7 +32,7 @@ $.postJSON = function (url, data, callback) {
             callback(msg);
         },
         error: function (xhr, textstatus, thrown) {
-            alert('SERVER_ERROR');
+
         }
     });
 };
@@ -41,7 +41,7 @@ $.postJSON = function (url, data, callback) {
  * 修改数据的ajax-put请求
  * @author laixm
  */
-$.putJSON = function (url, data, callback) {
+putJSON = function (url, data, callback) {
     $.ajax({
         url: url,
         type: "put",
@@ -61,7 +61,7 @@ $.putJSON = function (url, data, callback) {
  * 删除数据的ajax-delete请求
  * @author laixm
  */
-$.deleteJSON = function (url, data, callback) {
+deleteJSON = function (url, data, callback) {
     $.ajax({
         url: url,
         type: "delete",

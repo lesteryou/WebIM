@@ -1,0 +1,446 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    <title>发现</title>
+    <link rel="stylesheet" href="/statics/common/layui/dist/css/layui.css">
+    <style type="text/css">
+        .layui-find-list li img {
+            position: absolute;
+            left: 15px;
+            top: 8px;
+            width: 36px;
+            height: 36px;
+            border-radius: 100%;
+        }
+
+        .layui-find-list li {
+            position: relative;
+            height: 90px;;
+            padding: 5px 15px 5px 60px;
+            font-size: 0;
+            cursor: pointer;
+        }
+
+        .layui-find-list li * {
+            display: inline-block;
+            vertical-align: top;
+            font-size: 14px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .layui-find-list li span {
+            margin-top: 4px;
+            max-width: 155px;
+        }
+
+        .layui-find-list li p {
+            display: block;
+            line-height: 18px;
+            font-size: 12px;
+            color: #999;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .back {
+            cursor: pointer;
+        }
+
+        .lay_page {
+            position: fixed;
+            bottom: 0;
+            margin-left: -15px;
+            margin-bottom: 20px;
+            background: #fff;
+            width: 100%;
+        }
+
+        .layui-laypage {
+            width: 105px;
+            margin: 0 auto;
+            display: block
+        }
+
+        .layui-col-xs3 {
+            width: 28%;
+        }
+
+        .null-data {
+            text-align: center;
+            padding-top: 10%;
+            font-size: 20px;
+        }
+    </style>
+    <script src="/statics/common/layui/dist/layui.js"></script>
+    <script>
+        var url = {
+            search_friend: '/main/friend/search',
+            search_group: '/main/group/search',
+            apply_friend: '/main/friend/apply',
+            apply_group: '/main/group/apply'
+        };
+        layui.use(['layim', 'laypage', 'form'], function () {
+            var layim = layui.layim
+                , layer = layui.layer
+                , laytpl = layui.laytpl
+                , form = layui.form
+                , $ = layui.jquery
+                , laypage = layui.laypage;
+            $('.layui-input').focus();
+
+            function getRecommend() {
+                //测试数据
+                var data = {
+                    "code": 0,
+                    "msg": "",
+                    "data": [
+                        {
+                            "memberIdx": "122",
+                            "memberName": "1",
+                            "signature": "",
+                            "memberAge": "1",
+                            "memberSex": "0"
+                            , "avatar": 'http://ossguoshan.oss-cn-shanghai.aliyuncs.com/1570845.jpg'
+                        },
+                        {
+                            "memberIdx": "3",
+                            "memberName": "3",
+                            "signature": "",
+                            "memberAge": "3",
+                            "memberSex": "0"
+                            , "avatar": 'http://ossguoshan.oss-cn-shanghai.aliyuncs.com/1570845.jpg'
+                        },
+                        {
+                            "memberIdx": "1",
+                            "memberName": "11",
+                            "signature": "",
+                            "memberAge": "1",
+                            "memberSex": "0"
+                            , "avatar": 'http://ossguoshan.oss-cn-shanghai.aliyuncs.com/1570845.jpg'
+                        },
+                        {
+                            "memberIdx": "910992",
+                            "memberName": "清风",
+                            "signature": "星光灿烂",
+                            "memberAge": "23",
+                            "memberSex": "1"
+                            , "avatar": 'http://ossguoshan.oss-cn-shanghai.aliyuncs.com/910992.jpg'
+                        },
+                        {
+                            "memberIdx": "12",
+                            "memberName": "1",
+                            "signature": "",
+                            "memberAge": "1",
+                            "memberSex": "0"
+                            , "avatar": 'http://ossguoshan.oss-cn-shanghai.aliyuncs.com/1570845.jpg'
+                        },
+                        {
+                            "memberIdx": "911088",
+                            "memberName": "豆浆",
+                            "signature": "本人是一个开朗的人",
+                            "memberAge": "25",
+                            "memberSex": "0"
+                            , "avatar": 'http://ossguoshan.oss-cn-shanghai.aliyuncs.com/911088.jpg'
+                        },
+                        {
+                            "memberIdx": "911067",
+                            "memberName": "爱咋咋地",
+                            "signature": "一个优秀的人",
+                            "memberAge": "18",
+                            "memberSex": "0"
+                            , "avatar": 'http://ossguoshan.oss-cn-shanghai.aliyuncs.com/911067.jpg'
+                        },
+                        {
+                            "memberIdx": "1570855",
+                            "memberName": "回眸淡然笑",
+                            "signature": "有钱的自由，没钱的幻想！",
+                            "memberAge": "20",
+                            "memberSex": "2"
+                            , "avatar": 'http://ossguoshan.oss-cn-shanghai.aliyuncs.com/1570855.jpg'
+                        },
+                        {
+                            "memberIdx": "911117",
+                            "memberName": "美的不要不要的",
+                            "signature": "The world makes way for the man who knows where he is going.",
+                            "memberAge": "21",
+                            "memberSex": "2"
+                            , "avatar": 'http://ossguoshan.oss-cn-shanghai.aliyuncs.com/911117.jpg'
+                        },
+                        {
+                            "memberIdx": "1570868",
+                            "memberName": "圆圆",
+                            "signature": "各有各的活法",
+                            "memberAge": "40",
+                            "memberSex": "0"
+                            , "avatar": 'http://ossguoshan.oss-cn-shanghai.aliyuncs.com/empty2.jpg'
+                        },
+                        {
+                            "memberIdx": "911085",
+                            "memberName": "清晨",
+                            "signature": "你不进步就在后退，不做温水里的癞疙宝",
+                            "memberAge": "48",
+                            "memberSex": "2"
+                            , "avatar": 'http://ossguoshan.oss-cn-shanghai.aliyuncs.com/911085.jpg'
+                        },
+                        {
+                            "memberIdx": "911100",
+                            "memberName": "等待",
+                            "signature": "陪伴是最长情的告白",
+                            "memberAge": "19",
+                            "memberSex": "2"
+                            , "avatar": 'http://ossguoshan.oss-cn-shanghai.aliyuncs.com/911100.jpg'
+                        },
+                        {
+                            "memberIdx": "911058",
+                            "memberName": "实力派",
+                            "signature": "善 是一个美好",
+                            "memberAge": "30",
+                            "memberSex": "1"
+                            , "avatar": 'http://ossguoshan.oss-cn-shanghai.aliyuncs.com/911058.jpg'
+                        },
+                        {
+                            "memberIdx": "1570845",
+                            "memberName": "花海",
+                            "signature": "我就不写签名< (ˉ^ˉ)>",
+                            "memberAge": "20",
+                            "memberSex": "1"
+                            , "avatar": 'http://ossguoshan.oss-cn-shanghai.aliyuncs.com/1570845.jpg'
+                        },
+                        {
+                            "memberIdx": "22",
+                            "memberName": "2",
+                            "signature": "",
+                            "memberAge": "2",
+                            "memberSex": "0"
+                            , "avatar": 'http://ossguoshan.oss-cn-shanghai.aliyuncs.com/1570845.jpg'
+                        }
+                    ]
+                };
+                // $.get(url,{type:'get'},function(res){
+                // var data = eval('(' + res + ')');
+                var html = laytpl(LAY_tpl.value).render({
+                    data: data.data,
+                    legend: '推荐好友',
+                    type: 'friend'
+                });
+                $('#LAY_view').html(html);
+                // });
+            }
+
+            $('body').on('click', '.add', function () {//添加好友
+                var _this = $(this).parent(), params = _this.data();
+                params.avatar = _this.find('img').attr('src');
+                console.log(_this);
+                //弹出添加框
+                addAndApply(params);
+            }).on('click', '.back', function () {//返回推荐好友
+                // getRecommend();
+                $('#LAY_view').html('');
+                $("#LAY_page").css("display", "none");
+            }).keydown(function (event) {
+                if (parseInt(event.keyCode) === 13) {
+                    $(".find").click();
+                }
+            }).on('click', '.find', function () {
+                $("#LAY_page").css("display", "block");
+                var othis = $(this), input = othis.parents('.layui-col-space3').find('input').val().trim();
+                var addType = $('input:radio:checked').val();
+                console.log(input);
+                $.get(url['search_' + addType], {type: addType, value: input}, function (data) {
+                    var res = data;
+                    if (parseInt(res.code) !== 200) {
+                        return layer.msg(res.message);
+                    }
+                    laypage.render({
+                        elem: 'LAY_page'
+                        , count: res.results.count
+                        , limit: res.results.pageSize
+                        , prev: '<i class="layui-icon">&#58970;</i>'
+                        , next: '<i class="layui-icon">&#xe65b;</i>'
+                        , layout: ['prev', 'next']
+                        , curr: res.results.page
+                        , jump: function (obj, first) {
+                            //obj包含了当前分页的所有参数，比如：
+                            // var url = '/main/friend/search';
+                            var page;
+                            //首次不执行
+                            if (first) {
+                                page = res.results.page;
+                            } else {
+                                page = obj.curr;
+                            }
+                            $.get(url['search_' + addType], {
+                                type: addType,
+                                value: input,
+                                page: obj.curr || 1
+                            }, function (res) {
+                                var data = res;
+                                var html = '<fieldset class="layui-elem-field layui-field-title">' +
+                                    '            <legend><a class="back"><i class="layui-icon">&#xe65c;</i>返回</a> 查找结果</legend>' +
+                                    '        </fieldset>' +
+                                    '        <div class="layui-row ">';
+                                $.each(data.results.list, function (index, value) {
+                                    if (addType === 'friend') {
+                                        html += '<div class="layui-col-xs3 layui-find-list">' +
+                                            '        <li layim-event="add" data-type="friend" data-index="0" data-uid="' + value.id + '"' +
+                                            '            data-name="' + value.nickname + '">' +
+                                            '        <img src="' + value.profile_photo + '">' +
+                                            '        <span>' + value.nickname + '(' + value.id + ')</span>' +
+                                            '        <p>' + (value.sign || '暂无签名') + '</p>' +
+                                            '        <button class="layui-btn layui-btn-mini btncolor add" data-type="friend">' +
+                                            '               <i class="layui-icon">&#xe654;</i>加好友</button>' +
+                                            '        </li>' +
+                                            '        </div>';
+                                    } else {
+                                        $.each(data.results.list, function (index, value) {
+                                            html += '<div class="layui-col-xs3 layui-find-list">' +
+                                                '        <li layim-event="add" data-type="group" data-index="0" data-uid="' + value.id + '"' +
+                                                '            data-name="' + value.name + '">' +
+                                                '        <img src="' + value.image + '">' +
+                                                '        <span>' + value.name + '(' + value.id + ')</span>' +
+                                                '        <p>' + (value.description || '暂无描述') + '</p>' +
+                                                '        <button class="layui-btn layui-btn-mini btncolor add" data-type="group">' +
+                                                '               <i class="layui-icon">&#xe654;</i>加群</button>' +
+                                                '        </li>' +
+                                                '        </div>';
+                                        });
+                                    }
+
+                                });
+                                if (data.results.list.length === 0) {
+                                    html += '<div class="null-data"><span>无相关数据</span></div>';
+                                }
+                                $('#LAY_view').html(html);
+                            });
+                        }
+                    });
+                });
+                if (input) {
+                    // 这里需要从服务器获取数据然后进行填充
+                    // 以下为示例
+                    // var url = '/main/friend/search';
+
+                }
+            }).on('click', 'createGroup', function () {
+                // 创建群
+            });
+            $("input:radio").change(function () {
+                console.log('changed');
+                $('body').on('click', '.find');
+            });
+            //下一篇分享创建群的html
+            // $('body').on('click', '.createGroup', function () {//创建群
+            //     var othis = $(this);
+            //     parent.layui.im.createGroup(othis);
+            // });
+            function addAndApply(params) {
+                layui.layim.add({
+                    type: params.type
+                    , username: params.name
+                    , avatar: params.avatar
+                    , submit: function (group, remark, index) {
+                        console.log(group, params.uid, index);
+                        var msgStr = '好友申请已发送，请等待对方确认',
+                            postData = {
+                                friend_uid: params.uid,
+                                friend_group_id: group,
+                                type: params.type,
+                                remark: remark
+                            };
+                        if (params.type === 'group') {
+                            msgStr = '申请已发送，请等待管理员确认';
+                            postData = {
+                                group_id: group,
+                                type: params.type,
+                                remark: remark
+                            };
+                        }
+                        //通知对方
+                        $.post(url['apply_' + params.type], postData, function (res) {
+                            if (parseInt(res.code) !== 200) {
+                                console.log(res.message);
+                                layer.msg(res.message, {
+                                    icon: 2
+                                    , shade: 0.5
+                                }, function () {
+                                    layer.close(index);
+                                });
+                                return false;
+                            }
+                            layer.close(index);
+                            // $('body').find('.layui-layer-btn1').click();
+                            layer.msg(msgStr, {
+                                icon: 1
+                                , shade: 0.5
+                            }, function () {
+                                layer.close(index);
+                            });
+                        });
+
+                    }
+                });
+            }
+        });
+    </script>
+</head>
+<body>
+<div class="layui-form">
+    <div class="layui-container" style="padding:0">
+        <div class="layui-row layui-col-space3">
+            <div class="layui-col-xs7 mt15">
+                <input type="text" name="title" lay-verify="title" autocomplete="off" placeholder="请输入昵称/邮箱"
+                       class="layui-input">
+            </div>
+            <div class="layui-col-xs1 mt15">
+                <button class="layui-btn btncolor find">查找</button>
+            </div>
+
+            <div class="layui-col-xs3 mt15">
+                <input type="radio" name="add" value="friend" title="找人" checked="">
+                <input type="radio" name="add" value="group" title="找群">
+                <button class="layui-btn layui-btn-mini btncolor createGroup">我要建群</button>
+            </div>
+        </div>
+        <div id="LAY_view">
+
+        </div>
+        <textarea title="消息模版" id="LAY_tpl" style="display:none;">
+        <fieldset class="layui-elem-field layui-field-title">
+            <legend>推荐好友</legend>
+        </fieldset>
+        <div class="layui-row ">
+        <!--好友-->
+        <div class="layui-col-xs3 layui-find-list">
+        <li layim-event="add" data-type="friend" data-index="0" data-uid="item.memberIdx"
+            data-name="item.memberName">
+        <img src="avatar">
+        <span>memberName(memberIdx)</span>
+        <p>signature</p>
+        <button class="layui-btn layui-btn-mini btncolor add" data-type="friend"><i
+                class="layui-icon">&#xe654;</i>加好友</button>
+        </li>
+        </div>
+            <!--群-->
+        <div class="layui-col-xs3 layui-find-list">
+        <li layim-event="add" data-type="group" data-approval="approval" data-index="0"
+            data-uid="groupIdx" data-name="groupName">
+        <img src="item.groupIdx.jpg">
+        <span>groupName(groupIdx)</span>
+        <p>des</p>
+        <button class="layui-btn layui-btn-mini btncolor add" data-type="group">
+            <i class="layui-icon">&#xe654;</i>加群</button>
+        </li>
+        </div>
+        </div>
+        </textarea>
+
+        <div class="lay_page" id="LAY_page"></div>
+    </div>
+</div>
+</body>
+</html>

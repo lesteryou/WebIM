@@ -11,6 +11,7 @@ namespace App\Http\Controllers;
 
 use App\Http\Models\Friend;
 use App\Http\Models\Group;
+use App\Http\Models\User;
 use Interop\Container\ContainerInterface;
 use Slim\Http\Request;
 use Slim\Http\Response;
@@ -39,6 +40,12 @@ class MainController extends Controller
     public function init(Request $request, Response $response, $args)
     {
         $userInfo = session('userInfo');
+        $uid = $userInfo->id;
+
+        $User = new User();
+        $userInfo = $User->getUserInfo($uid);
+        session(['userInfo' => $userInfo]);
+
         $mine = [
             'username' => $userInfo->nickname,
             'id' => $userInfo->id,

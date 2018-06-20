@@ -9,11 +9,9 @@
 namespace App\Http\Controllers;
 
 
-use App\Exceptions\TestException;
 use App\Http\Models\User;
 use App\Http\Models\UserLoginHistory;
 use Interop\Container\ContainerInterface;
-use Slim\Exception\SlimException;
 use Slim\Http\Request;
 use Slim\Http\Response;
 use App\Libraries\Verify;
@@ -45,9 +43,9 @@ class PassController extends Controller
     public function login(Request $request, Response $response, $args)
     {
         //如果已经登录，就禁止重复登录
-        if (!empty(session('userInfo'))) {
-            TEA('600');
-        }
+//        if (!empty(session('userInfo'))) {
+//            TEA('600');
+//        }
         $formData = $request->getParsedBody();
         if (empty($formData['username'])) TEA('450', 'username');
         if (empty($formData['password'])) TEA('450', 'password');
@@ -65,7 +63,8 @@ class PassController extends Controller
             TEA('602');
         }
         //添加上次登录时间
-        $this->model->updateLastLogin($userInfo->id);
+        $_token = $this->model->updateLastLogin($userInfo->id);
+        $userInfo->_token = $_token;
         //添加本次登录log
         (new UserLoginHistory())->addRecord($request, $userInfo->id);
         session(['userInfo' => $userInfo]);
@@ -82,21 +81,46 @@ class PassController extends Controller
     public function register(Request $request, Response $response, $args)
     {
         $formData = $request->getParsedBody();
-        if (empty($formData['nickname'])) TEA('450', 'nichname');
-        if (empty($formData['username'])) TEA('450', 'username');
+        if (empty($formData['nickname'])) TEA('450', 'nickname');
+        if (empty($formData['email'])) TEA('450', 'email');
         if (empty($formData['password'])) TEA('450', 'password');
         if (empty($formData['captcha'])) TEA('450', 'captcha');
-        //使用名称获取用户信息
-        $userInfo = $this->model->getUserInfoByEmail($formData['username']);
-        //该用户名已被注册
-        !empty($userInfo) && TEA('603');
+
         $Verify = new Verify();
         !($Verify->check($formData['captcha'])) && TEA('605');
+
+        $this->model->checkIsExisted('email', $formData['email']);
+
         $formData['create_ip'] = $request->getAttribute('ip_address');
         $uid = $this->model->register($formData);
         return $response->withJson(ASS(['uid' => $uid]));
     }
 
+    /**
+     * @param Request $request
+     * @param Response $response
+     * @param $args
+     * @return mixed
+     * @throws \App\Exceptions\ApiException
+     */
+    public function checkIsExisted(Request $request, Response $response, $args)
+    {
+        $formData = $request->getParsedBody();
+        if (empty($formData['field'])) TEA('450', 'field');
+        if (empty($formData['value'])) TEA('450', 'value');
+        if ($formData['field'] != 'email') {
+            $formData['field'] = 'nickname';
+        }
+        $this->model->checkIsExisted($formData['field'], $formData['value']);
+        return $response->withJson(ASS(['isExisted' => 0, 'field' => $formData['field'], 'value' => $formData['value']]));
+    }
+
+    /**
+     * @param Request $request
+     * @param Response $response
+     * @param $args
+     * @return mixed
+     */
     public function makeCaptcha(Request $request, Response $response, $args)
     {
         $config = array(

@@ -8,6 +8,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Models\Group;
 use Slim\Http\Request;
 use Slim\Http\Response;
 use App\Http\Models\GroupMember;
@@ -43,7 +44,30 @@ class GroupController extends Controller
         return $response->withJson(IM_ASS(['list' => $data]));
     }
 
+    /**
+     * @param Request $request
+     * @param Response $response
+     * @param $args
+     * @return mixed
+     * @throws \App\Exceptions\ApiException
+     */
+    public function search(Request $request, Response $response, $args)
+    {
+        $queryData = $request->getQueryParams();
+        if (empty($queryData['value'])) $queryData['value'] = '';
+        $queryData['page'] = isset($queryData['page']) ? $queryData['page'] : 1;
+        $queryData['pageSize'] = isset($queryData['pageSize']) ? $queryData['pageSize'] : 10;
+        trim_params($queryData);
 
+        $Group = new Group();
+        $returnData = $Group->searchGroups($queryData['value'], $queryData['page'], $queryData['pageSize']);
+        return $response->withJson(ASS($returnData));
+    }
+
+    public function applyGroup(Request $request, Response $response, $args)
+    {
+
+    }
 
 
 }

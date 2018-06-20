@@ -41,4 +41,25 @@ class Group extends Model
         return $obj_list;
     }
 
+    /**
+     * @param string $value
+     * @param int $page
+     * @param int $pageSize
+     * @return mixed
+     */
+    public function searchGroups($value, $page = 1, $pageSize = 10)
+    {
+        $where[] = ['is_deleted', '=', 0];
+        if (!empty($value)) $where[] = ['name', 'like', '%' . $value . '%'];
+        $builder = DB::table($this->table)
+            ->select(['id', 'name', 'image', 'description'])
+            ->where($where);
+        $data['count'] = $builder->count();
+        $data['page'] = $page;
+        $data['pageSize'] = $pageSize;
+        $data['list'] = $builder->forPage($page, $pageSize)
+            ->get();
+        return $data;
+    }
+
 }

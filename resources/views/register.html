@@ -1,16 +1,16 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html class="login-alone">
 <head>
-    <title>登录</title>
+    <title>注册</title>
     <meta name="keywords" content=""/>
     <meta name="description" content=""/>
     <meta http-equiv="content-type" content="text/html; charset=UTF-8"/>
-    <link href="/statics/custom/pass/css/screen.css?v=3.9" media="screen, projection" rel="stylesheet" type="text/css">
-    <link rel="stylesheet" type="text/css" href="/statics/custom/pass/css/base.css?v=3.9">
-    <link rel="stylesheet" type="text/css" href="/statics/custom/pass/css/login.css?v=3.9">
+    <link href="statics/custom/pass/css/screen.css?v=3.9" media="screen, projection" rel="stylesheet" type="text/css">
+    <link rel="stylesheet" type="text/css" href="statics/custom/pass/css/base.css?v=3.9">
+    <link rel="stylesheet" type="text/css" href="statics/custom/pass/css/register.css?v=3.9">
     <script src="https://cdn.bootcss.com/jquery/3.3.1/jquery.min.js"></script>
-    <script src="/statics/common/jquery.ajax.js"></script>
-    <script src="/statics/common/layer/layer.js"></script>
+    <script src="statics/common/jquery.ajax.js"></script>
+    <script src="statics/common/layer/layer.js"></script>
     <style>
         .red {
             color: red;
@@ -30,57 +30,76 @@
             <table border="0" cellspacing="0" cellpadding="0">
                 <tbody>
                 <tr>
-                    <th>账户</th>
+                    <th>昵称</th>
                     <td width="245">
-                        <input id="email" type="text" name="email" maxlength="35" placeholder="电子邮箱" autocomplete="off"
+                        <input id="nickname" type="text" name="nickname" maxlength="25" placeholder="昵称"
+                               autocomplete="off" value="">
+                    </td>
+                    <td>
+
+                    </td>
+                </tr>
+                <tr>
+                    <th>电子邮箱</th>
+                    <td width="245">
+                        <input id="email" type="text" name="email" maxlength="40" placeholder="电子邮箱" autocomplete="off"
                                value="">
                     </td>
                     <td>
+
                     </td>
                 </tr>
                 <tr>
                     <th>密码</th>
                     <td width="245">
-                        <input id="password" type="password" name="password" placeholder="请输入密码" autocomplete="off">
+                        <input id="password" type="password" name="password" maxlength="30" placeholder="请输入密码"
+                               autocomplete="off">
                     </td>
                     <td>
+
+                    </td>
+                </tr>
+                <tr>
+                    <th>确认密码</th>
+                    <td width="245">
+                        <input id="rePassword" type="password" name="password" maxlength="30" placeholder="再次输入密码"
+                               autocomplete="off">
+                    </td>
+                    <td>
+
                     </td>
                 </tr>
                 <tr id="tr-vcode" style="">
                     <th>验证码</th>
                     <td width="245">
                         <div class="valid">
-                            <input id="captcha" maxlength="4" type="text" name="vcode" autocomplete="off">
+                            <input id="captcha" maxlength="4" type="text" autocomplete="off" name="vcode">
                             <img class="vcode" src="" width="85" height="35" alt="">
                         </div>
                     </td>
                     <td>
+
                     </td>
                 </tr>
                 <tr class="find">
                     <th></th>
                     <td>
                         <div>
-                            <label class="checkbox" for="chk11"><input style="height: auto;" id="chk11" type="checkbox"
-                                                                       name="remember_me">记住我</label>
-                            <!--<a href="passport/forget-pwd">忘记密码？</a>-->
+                            <label class="checkbox" for=""></label>
+                            <a href="/login">已有账号，去登录？</a>
                         </div>
                     </td>
                     <td></td>
                 </tr>
                 <tr>
                     <th></th>
-                    <td width="245"><input class="confirm" type="button" value="登  录"></td>
+                    <td width="245"><input class="confirm" type="button" value="注  册"></td>
                     <td></td>
                 </tr>
                 </tbody>
             </table>
-            <input type="hidden" name="refer" value="site/">
+            <input type="hidden" name="refer" value="site">
         </form>
-    </div>
-    <div class="reg">
-        <p>还没有账号？<br>赶快免费注册一个吧！</p>
-        <a class="reg-btn" href="/register">立即免费注册</a>
     </div>
 </div>
 <div id="footer">
@@ -90,12 +109,25 @@
     var flag = false;
     $(function () {
         getCaptcha();
-        login();
+        register();
+
         $('.vcode').click(function () {
             getCaptcha();
+            $('#captcha').val('').focus();
+        });
+
+        // 昵称
+        $("#nickname").focus().focus(function () {
+            removeTip($("#nickname").parent().next());
+        }).blur(function () {
+            var this_elem = $("#nickname");
+            if (!checkParamEmpty(this_elem, this_elem.parent().next())) {
+                return false;
+            }
+            // checkParamIsExisted('nickname', this_elem.val(), this_elem.parent().next());
         });
         // 邮箱
-        $('#email').focus().focus(function () {
+        $('#email').focus(function () {
             removeTip($('#email').parent().next());
         }).blur(function () {
             var this_elem = $('#email');
@@ -107,6 +139,7 @@
                 redTip(this_elem.parent().next(), '请输入有效的邮箱地址');
                 return false;
             }
+            checkParamIsExisted('email', this_elem.val(), this_elem.parent().next());
         });
         // 密码
         $('#password').focus(function () {
@@ -120,6 +153,18 @@
                 redTip(this_elem.parent().next(), '密码不能少于六位');
             }
         });
+        $('#rePassword').focus(function () {
+            removeTip($('#rePassword').parent().next());
+        }).blur(function () {
+            var this_elem = $('#rePassword');
+            if (!checkParamEmpty(this_elem, this_elem.parent().next())) {
+                return false;
+            }
+            if (this_elem.val() !== $('#password').val()) {
+                redTip(this_elem.parent().next(), '两次密码不一样');
+                return false;
+            }
+        });
         // 验证码
         $('#captcha').focus(function () {
             removeTip($('#captcha').parent().parent().next());
@@ -130,6 +175,7 @@
             }
         });
     });
+
 
     /**
      * 提示
@@ -164,25 +210,44 @@
     }
 
     /**
-     * 登录
+     * 验证是否存在
+     * @param field
+     * @param value
+     * @param tip_elem
      */
-    function login() {
+    function checkParamIsExisted(field, value, tip_elem) {
+        $.postJSON('/pass/checkRegister', {field: field, value: value}, function (res) {
+            if (parseInt(res.code) === 200) {
+                return true;
+            } else {
+                redTip(tip_elem, (field === 'username' ? '用户名' : '邮箱') + '已存在');
+                return false;
+            }
+        })
+    }
+
+    /**
+     * 注册
+     */
+    function register() {
         $('.confirm').click(function () {
             if (flag === true) {
                 return;
             }
             flag = true;
-            var username = $('#email').val();
+            var nickname = $('#nickname').val();
+            var email = $('#email').val();
             var password = $('#password').val();
             var captcha = $('#captcha').val();
             var postData = {
-                'username': username,
+                'nickname': nickname,
+                'email': email,
                 'password': password,
                 'captcha': captcha
             };
             var empty = false;
             $.each(postData, function (index, value) {
-                if (value.trim() === '') {
+                if (value.trim() === "") {
                     flag = false;
                     empty = true;
                     return false;
@@ -191,20 +256,18 @@
             if (empty === true) {
                 return false;
             }
-            $.postJSON('/pass/login', postData, function (res) {
+            console.log('342');
+            $.postJSON('/pass/register', postData, function (res) {
                 if (parseInt(res.code) === 200) {
                     window.location.href = '/';
                 } else {
                     tips(res.message);
                     flag = false
                 }
-            })
+            });
         })
     }
 
-    /**
-     * 获取验证码
-     */
     function getCaptcha() {
         $.getJSON('/pass/captcha?time=' + Date.parse(new Date()), [], function (res) {
             if (parseInt(res.code) === 200) {
