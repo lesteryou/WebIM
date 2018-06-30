@@ -15,6 +15,7 @@ require_once __DIR__ . '/api.php';
  * -------------------------------------------------------------------
  */
 
+$app->get('/home', \App\Http\Controllers\HomeController::class . ':Index');
 
 /**
  * 使用视图层 + 中间件类

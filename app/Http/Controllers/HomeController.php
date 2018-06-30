@@ -8,6 +8,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Libraries\Cookies;
 use Slim\Http\Request;
 use Slim\Http\Response;
 use Interop\Container\ContainerInterface;
@@ -33,6 +34,9 @@ class HomeController extends Controller
     public function Index(Request $request, Response $response, $args)
     {
         $data = ['id', 'name'];
+        $response = Cookies::res($response)->set('b', 11223344);
+        $_COOKIE['aabbcc'] = 'aabbcc';
+        setcookie('bb', 'cc');
         return $this->view->render($response, 'index.html', ['data' => $data]);
     }
 

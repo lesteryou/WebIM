@@ -83,4 +83,17 @@ class FrontController extends Controller
         trim_params($queryArr);
         return $this->view->render($response, 'main/find.html', $args);
     }
+
+    /**
+     * @param Request $request
+     * @param Response $response
+     * @param $args
+     * @return mixed
+     */
+    public function msgBox(Request $request, Response $response, $args)
+    {
+        $queryArr = $request->getQueryParams();
+        trim_params($queryArr);
+        return $this->view->render($response, 'main/msgBox.html', $args);
+    }
 }

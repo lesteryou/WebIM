@@ -9,7 +9,9 @@
 namespace App\Http\Controllers;
 
 
+use App\Http\Models\Apply;
 use App\Http\Models\Friend;
+use App\Libraries\Curl;
 use Interop\Container\ContainerInterface;
 use Slim\Http\Request;
 use Slim\Http\Response;
@@ -69,6 +71,19 @@ class FriendController extends Controller
 
         $Friend = new Friend();
         $insertID = $Friend->apply($formData);
+
+        // 让WebSocket 推送给被申请者，是否同意添加
+        $applyNum = (new Apply())->getApplyNum(session('userInfo')->id);
+        $reqData = [
+            'apply_id'=>$insertID,
+            'apply_uid' => session('userInfo')->id,
+            'friend_uid' => $formData['friend_uid'],
+            'remark' => $formData['remark'],
+            'type' => 'applyFriend',
+            '_token' => '1234567890',
+            'applyNum'=>$applyNum
+        ];
+        Curl::post('http://localhost:9501', $reqData);
         return $response->withJson(ASS(['id' => $insertID]));
     }
 }

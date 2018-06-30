@@ -24,9 +24,20 @@ return [
 
         // Monolog settings
         'logger' => [
-            'name' => 'slim-app',
-            'path' => isset($_ENV['docker']) ? 'php://stdout' : __DIR__ . '/../data/logs/app.log',
-            'level' => \Monolog\Logger::DEBUG,
+            'name' => 'WebIM',
+            'SQL'=>[
+                'path' => isset($_ENV['docker']) ? 'php://stdout' : __DIR__ . '/../data/logs/sql/sql.log',
+                'level' => \Monolog\Logger::DEBUG,
+                ],
+            'REQUEST'=>[
+                'path' => isset($_ENV['docker']) ? 'php://stdout' : __DIR__ . '/../data/logs/req/req.log',
+                'level' => \Monolog\Logger::INFO,
+            ],
+            'INFO'=>[
+                'path' => isset($_ENV['docker']) ? 'php://stdout' : __DIR__ . '/../data/logs/Info/error.log',
+                'level' => \Monolog\Logger::EMERGENCY,
+            ],
+
         ],
 
         //Illuminate\database settings

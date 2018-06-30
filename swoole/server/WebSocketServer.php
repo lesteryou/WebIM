@@ -29,10 +29,16 @@ class WebSocketServer
 
     public $MT;
 
+    public $_token;
 
-    public function __construct()
+    public $port;
+
+
+    public function __construct($port = 9501, $_token = '1234567890')
     {
-        $this->server = new Server('0.0.0.0', 9501);
+        $this->port = $port;
+        $this->_token = $_token;
+        $this->server = new Server('0.0.0.0', $this->port);
 
         $this->server->set([
             'daemonize' => false,
@@ -42,6 +48,7 @@ class WebSocketServer
 //        $this->server->on('open', array($this, 'onOpen'));
         $this->server->on('message', array($this, 'onMessage'));
         $this->server->on('close', array($this, 'onClose'));
+        $this->server->on('request', array($this, 'onRequest'));
 
         $this->user = new User();
         $this->privateMessage = new PrivateMessage();
@@ -359,6 +366,86 @@ class WebSocketServer
 
         }
 //        $server->push($frame->fd, "this is server");
+    }
+
+
+    public function onRequest(\swoole_http_request $request, \swoole_http_response $response)
+    {
+        $_SERVER = $request->server;
+        $method = $_SERVER['request_method'];
+        // 如果是 favicon 就拒绝访问。
+        if ($method == 'GET' && $_SERVER['request_uri'] == '/favicon.ico') {
+            $response->status('404');
+            $response->end();
+            return $response;
+        }
+        // 如果是GET，跳转到前台
+        if ($method == 'GET') {
+            $response->header('Location', $_SERVER['remote_addr']);
+            $response->status('301');
+            $response->end();
+            return $response;
+        } else {
+            $postData = $request->post;
+            // 验证授权
+            if (empty($postData['_token']) || $postData['_token'] != $this->_token) {
+                $respData = [
+                    'message' => '缺少授权',
+                    'code' => 0
+                ];
+                $response->end(json_encode($respData));
+                return $response;
+            }
+            // 参数
+            if (empty($postData['type'])) {
+                $respData = [
+                    'message' => '缺少参数',
+                    'code' => 0
+                ];
+                $response->end(json_encode($respData));
+                return $response;
+            }
+
+            /**
+             * 处理 App server 发起的请求。
+             */
+            $operationType = $postData['type'];
+            $apply_uid = $postData['apply_uid'];
+            $apply_info = $this->MT::table('user')->get($apply_uid);
+            switch ($operationType) {
+                case 'applyFriend':
+                    if (!$apply_info) break;
+                    echo json_encode($postData);
+                    $this->server->push($apply_info['fd'], json_encode($postData));
+                    break;
+                case 'applyGroup':
+                    if (!$apply_info) break;
+                    $this->server->push($apply_info['fd'], json_encode($postData));
+                    // 获取组员ID.
+                    $memberTMList = $this->MT::table('groupMembers')->get($postData['groupInfo']['id']);
+                    $memberIDArr = explode(',', $memberTMList['members']);
+                    $sendData = [
+                        'type' => 'groupSystem',
+                        'data' => [
+                            'message' => $apply_info['username'] . ' 加入本群',
+                            'group_id' => $postData['groupInfo']['id'],
+                        ]
+                    ];
+                    foreach ($memberIDArr as $key => $userID) {
+                        if ($userID == $apply_uid) {
+                            continue;
+                        }
+                        $userInfo = $this->MT::table('user')->get($userID);
+                        $this->server->push($userInfo['fd'], json_encode($sendData));
+                    }
+                    break;
+                default:
+                    break;
+            }
+        }
+        echo $method = $_SERVER['request_method'];
+        $response->end(json_encode(['code' => 200]));
+        return true;
     }
 
     /**

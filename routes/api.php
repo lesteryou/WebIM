@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers;
+use Illuminate\Database\Capsule\Manager as DB;
 
 /**
  * 通行证相关
@@ -18,6 +19,9 @@ $app->group('/pass', function () {
  */
 $app->group('/main', function () {
     $this->get('/init', Controllers\MainController::class . ':init');
+    $this->get('/applyList', Controllers\MainController::class . ':listApply');
+    $this->get('/applyNum', Controllers\MainController::class . ':getApplyNum');
+    $this->post('/doApply', Controllers\MainController::class . ':doApply');
 
     $this->get('/message/history', Controllers\MessageController::class . ':history');
 

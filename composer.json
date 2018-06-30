@@ -13,7 +13,9 @@
     "slim/twig-view": "~2.3.0",
     "monolog/monolog": "^1.17",
     "illuminate/database": "5.5.*",
-    "akrabat/rka-ip-address-middleware": "^0.6.0"
+    "illuminate/events":"5.5.*",
+    "akrabat/ip-address-middleware": "^1.0",
+    "dflydev/fig-cookies":"1.0.2"
   },
   "autoload": {
     "psr-4": {

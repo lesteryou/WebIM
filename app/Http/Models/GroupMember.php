@@ -48,5 +48,17 @@ class GroupMember extends Model
         return $objList;
     }
 
+    /**
+     * @param $uid
+     * @param $group_id
+     * @return int
+     */
+    public function checkIsMaster($uid, $group_id)
+    {
+        return DB::table($this->table)
+            ->where([['group_id', '=', $group_id], ['uid', '=', $uid], ['is_master', '=', 1], ['is_deleted', '=', 0]])
+            ->count();
+    }
+
 
 }

@@ -6,6 +6,8 @@
  * Desc:
  */
 
+use Illuminate\Database\Capsule\Manager as DB;
+
 /**
  * 重定向，去除url最后的 “/”
  */
@@ -25,6 +27,17 @@
  * 获取客户端ip组件
  * 使用 $request->getAttribute('ip_address'); 获取ip地址
  */
-$checkProxyHeaders = true;
-$trustedProxies = ['10.0.0.1', '10.0.0.2'];
+$checkProxyHeaders = true; // Note: Never trust the IP address for security processes!
+$trustedProxies = ['10.0.0.1', '10.0.0.2']; // Note: Never trust the IP address for security processes!
 $app->add(new RKA\Middleware\IpAddress($checkProxyHeaders, $trustedProxies));
+
+$app->add(function (Slim\Http\Request $request, Slim\Http\Response $response, $next) {
+    $logger = $this->get('logger');
+
+    $requestData = $request->getParams();
+
+    $logger->req->Info($request->getUri(),is_array($requestData)?$requestData:[$requestData]);
+
+    $response = $next($request, $response);
+    return $response;
+});

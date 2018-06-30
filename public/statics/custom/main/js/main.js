@@ -48,7 +48,7 @@ var layim;
 layui.config({
     base: '/statics/common/contextMenu/' //扩展 JS 所在目录
 }).use('ext');
-layui.use(['layim', 'jquery','contextMenu'], function () {
+layui.use(['layim', 'jquery', 'contextMenu'], function () {
     layim = layui.layim;
     $ = jquery = layui.jquery;
 
@@ -92,7 +92,7 @@ layui.use(['layim', 'jquery','contextMenu'], function () {
         //,skin: ['aaa.jpg'] //新增皮肤
         , notice: true //是否开启桌面消息提醒，默认false
 
-        , msgbox: '/layim/demo/msgbox.html' //消息盒子页面地址，若不开启，剔除该项即可
+        , msgbox: '/front/main/msgBox' //消息盒子页面地址，若不开启，剔除该项即可
         , find: '/front/main/find' //发现页面地址，若不开启，剔除该项即可
         , chatLog: '/front/main/chatLog' //聊天记录页面地址，若不开启，剔除该项即可
 
@@ -111,7 +111,7 @@ layui.use(['layim', 'jquery','contextMenu'], function () {
 
         ws.onmessage = function (res) {
             heartCheck.reset();
-            // console.log(res);
+            console.log(res);
             var messageData = JSON.parse(res.data);
             if (messageData.type === 'chat') {
                 layim.getMessage(messageData.data);
@@ -121,6 +121,49 @@ layui.use(['layim', 'jquery','contextMenu'], function () {
                 for (var j = 0, len = messageData.data.length; j < len; j++) {
                     layim.getMessage(messageData.data[j]);
                 }
+            } else if (messageData.type === 'msgBox') {
+                layim.msgbox(messageData.data.total);
+            } else if (messageData.type === 'applyFriend') {
+                var userInfo = messageData.friendInfo;
+                if (parseInt(messageData.is_accept) === 1) {
+                    layim.addList({
+                        type: 'friend'
+                        , username: userInfo.username
+                        , avatar: userInfo.avatar
+                        , groupid: userInfo.fg_id //所在的分组id
+                        , id: userInfo.id //好友ID
+                        , sign: userInfo.sign //好友签名
+                    });
+                    lightTips(6, '成功添加【' + userInfo.username + '】为好友');
+                } else {
+                    lightTips(5, '【' + userInfo.username + '】拒绝了你的好友申请');
+                }
+            } else if (messageData.type === 'applyGroup') {
+                var groupInfo = messageData.groupInfo;
+                if (parseInt(messageData.is_accept) === 1) {
+                    layim.addList({
+                        type: 'group'
+                        , groupname: groupInfo.group_name
+                        , avatar: groupInfo.avatar
+                        , id: groupInfo.id //好友ID
+                    });
+                    layim.getMessage({
+                        system: true
+                        , id: groupInfo.id
+                        , type: "group"
+                        , content: '你已加入该群'
+                    });
+                    lightTips(6, '成功加入【' + groupInfo.group_name + '】群');
+                } else {
+                    lightTips(5, '【' + groupInfo.group_name + '】管理员拒绝了你的加群申请');
+                }
+            } else if (messageData.type === 'groupSystem') {
+                layim.getMessage({
+                    system: true
+                    , id: messageData.data.group_id
+                    , type: "group"
+                    , content: messageData.data.message
+                });
             }
         };
 
@@ -133,8 +176,13 @@ layui.use(['layim', 'jquery','contextMenu'], function () {
             console.log(ev);
         };
 
-        //console.log(res.mine);
-        // layim.msgbox(5); //模拟消息盒子有新消息，实际使用时，一般是动态获得
+        $.get(url_get_apply_num, function (res) {
+            if (parseInt(res.code) === 200) {
+                if (parseInt(res.results.applyNum) !== 0) {
+                    layim.msgbox();
+                }
+            }
+        });
         layui.ext.init(); //更新右键点击事件
     });
 
@@ -510,4 +558,16 @@ function send(data, is_obj) {
 
 function msg() {
     alert('124');
+}
+
+function lightTips(icon, msg) {
+    layer.msg(msg, {
+        time: 3,
+        btn: ['查看'],
+        icon: icon,
+        yes: function (index) {
+            $(".layim-tool-msgbox").click();
+            layer.close(index);
+        }
+    });
 }

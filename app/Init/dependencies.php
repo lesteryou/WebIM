@@ -1,5 +1,8 @@
 <?php
 
+use Illuminate\Events\Dispatcher;
+use Illuminate\Container\Container as IlluminateContainer;
+
 // DIC configuration
 $container = $app->getContainer();
 
@@ -22,8 +25,17 @@ $container['view'] = function (\Slim\Container $c) {
 $container['logger'] = function (\Slim\Container $c) {
     $settings = $c->get('settings')['logger'];
     $logger = new Monolog\Logger($settings['name']);
+//    $logger::setTimezone(new \DateTimeZone('Asia/Shanghai'));
     $logger->pushProcessor(new Monolog\Processor\UidProcessor());
-    $logger->pushHandler(new Monolog\Handler\StreamHandler($settings['path'], $settings['level']));
+    $logger->pushHandler(new Monolog\Handler\StreamHandler($settings['INFO']['path'], $settings['INFO']['level']));
+
+    $sqlLogger = clone $logger->withName('SQL');
+    $sqlLogger->pushHandler(new \Monolog\Handler\RotatingFileHandler($settings['SQL']['path'], '30M', $settings['SQL']['level']));
+    $logger->sql = $sqlLogger;
+
+    $reqLogger = clone $logger->withName('request');
+    $reqLogger->pushHandler(new \Monolog\Handler\RotatingFileHandler($settings['REQUEST']['path'], '30M', $settings['REQUEST']['level']));
+    $logger->req = $reqLogger;
     return $logger;
 };
 
@@ -54,6 +66,11 @@ $container['notAllowedHandler'] = function (\Slim\Container $c) {
  */
 $container['errorHandler'] = function (\Slim\Container $c) {
     return function (\Slim\Http\Request $request, \Slim\Http\Response $response, \Exception $e) use ($c) {
+
+        // 添加日志
+        $logger = $c->get('logger');
+        $errString = 'code:' . $e->getCode() ."\n message:".$e->getMessage(). "\n line:" . $e->getLine() . "\n file:" . $e->getFile() . "\n " . $e->getTraceAsString();
+        $logger->Error($errString);
 
         //处理自定义的异常
         if ($e instanceof \App\Exceptions\ApiException) {
@@ -87,9 +104,20 @@ $container['errorHandler'] = function (\Slim\Container $c) {
 $capsule = new Illuminate\Database\Capsule\Manager;
 // 创建链接
 $capsule->addConnection($container->get('settings')['database']);
+
+$capsule->setEventDispatcher(new Dispatcher(new IlluminateContainer));
+
 // 设置全局静态可访问DB
 $capsule->setAsGlobal();
+
 // 启动Eloquent
 //$capsule->bootEloquent();
+
+// 添加 SQL 日志
+$db = $capsule->getConnection('default');
+$db->listen(function ($query) use ($container) {
+    $sql = vsprintf(str_replace("?", "'%s'", $query->sql), $query->bindings) . " \n[" . $query->time . ' ms] ';
+    $container->get('logger')->sql->debug($sql,$query->bindings);
+});
 
 

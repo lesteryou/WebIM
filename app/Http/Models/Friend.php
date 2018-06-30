@@ -67,6 +67,20 @@ class Friend extends Model
     }
 
     /**
+     * @param int $uid
+     * @param int $friend_uid
+     * @param int $fg_id friend_group_id
+     * @param string $remark
+     * @return int
+     */
+    public function addFriend($uid, $friend_uid, $fg_id, $remark = '')
+    {
+        $keyVal = compact('uid', 'friend_uid', 'fg_id', 'remark');
+        $keyVal['create_time'] = time();
+        return DB::table($this->table)->insertGetId($keyVal);
+    }
+
+    /**
      * 获取好友分组详情
      *
      * @param int $id
@@ -227,5 +241,12 @@ class Friend extends Model
             'modify_time' => time()
         ];
         return DB::table('apply')->insertGetId($keyValArr);
+    }
+
+    public function checkIsFriend($uid, $friend_uid)
+    {
+        return DB::table($this->table)
+            ->where([['uid', '=', $uid], ['friend_uid', '=', $friend_uid], ['is_deleted', '=', 0]])
+            ->count();
     }
 }

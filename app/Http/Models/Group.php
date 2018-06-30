@@ -62,4 +62,18 @@ class Group extends Model
         return $data;
     }
 
+    /**
+     * 获取群信息
+     *
+     * @param $group_id
+     * @return \Illuminate\Database\Eloquent\Model|\Illuminate\Database\Query\Builder|null|object
+     */
+    public function getGroup($group_id)
+    {
+        return DB::table($this->table)
+            ->select(['id', 'master_uid', 'create_time', 'image', 'name'])
+            ->where([['id', '=', $group_id], ['is_deleted', '=', 0]])
+            ->first();
+    }
+
 }

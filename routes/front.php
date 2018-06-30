@@ -29,7 +29,5 @@ $app->get('/test', function (Request $request, Response $response, $args) {
 $app->group('/front',function (){
     $this->get('/main/find', Controllers\FrontController::class.':find');
     $this->get('/main/chatLog', Controllers\FrontController::class.':chatLog');
-    $this->get('/main/msgBox', function (Request $request, Response $response, $args) {
-        return $this->view->render($response, 'find.html', $args);
-    });
+    $this->get('/main/msgBox', Controllers\FrontController::class.':msgBox');
 });

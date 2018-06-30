@@ -140,3 +140,14 @@ function trim_params(&$data)
     }
     return $data;
 }
+
+/**
+ * App server to WebSocket server
+ *
+ * @param array $data
+ */
+function sendToWS($data)
+{
+    $data['_token'] = '1234567890';
+    \App\Libraries\Curl::post('localhost:9501', $data);
+}

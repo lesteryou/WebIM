@@ -1,6 +1,6 @@
 <?php
 /**
- * Let the session be in work.
+ * Set the session be in work.
  */
 !isset($_SESSION) && session_start();
 
