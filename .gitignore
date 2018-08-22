@@ -2,8 +2,8 @@
 /.idea
 .idea
 .project
+.env
 composer.phar
-/config/database.php
 /data/cache/views/
 !/data/cache/views/.gitkeep
 /data/logs/

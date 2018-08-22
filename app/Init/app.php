@@ -10,6 +10,12 @@
 require_once __DIR__ . '/../../vendor/autoload.php';
 
 /**
+ * Load the .env file
+ */
+$dotEnv = new \Dotenv\Dotenv(__DIR__ . '/../../');
+$dotEnv->load();
+
+/**
  * The common functions
  */
 require_once __DIR__ . '/../Helpers/functions.php';
