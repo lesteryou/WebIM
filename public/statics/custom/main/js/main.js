@@ -87,20 +87,20 @@ layui.use(['layim', 'jquery', 'contextMenu'], function () {
 
         , title: 'WebIM'
         , right: '10px'
-        //,minRight: '90px' //聊天面板最小化时相对浏览器右侧距离
+        , minRight: '5px' //聊天面板最小化时相对浏览器右侧距离
         , initSkin: '3.jpg' //1-5 设置初始背景
         //,skin: ['aaa.jpg'] //新增皮肤
         , notice: true //是否开启桌面消息提醒，默认false
 
-        , msgbox: '/front/main/msgBox' //消息盒子页面地址，若不开启，剔除该项即可
-        , find: '/front/main/find' //发现页面地址，若不开启，剔除该项即可
-        , chatLog: '/front/main/chatLog' //聊天记录页面地址，若不开启，剔除该项即可
+        , msgbox: '/front/main/msgBox' //消息盒子页面地址
+        , find: '/front/main/find' //发现页面地址
+        , chatLog: '/front/main/chatLog' //聊天记录页面地址
 
     });
 
     //Listen for ready.
     layim.on('ready', function (res) {
-        ws = new WebSocket('ws://localhost:9501?uid=' + uid + '&_token=' + _token);
+        getConnect();
 
         layui.ext.init();
 
@@ -113,6 +113,11 @@ layui.use(['layim', 'jquery', 'contextMenu'], function () {
             heartCheck.reset();
             console.log(res);
             var messageData = JSON.parse(res.data);
+            console.log(messageData);
+
+            // 更新消息盒子的消息数目
+            messageData.applyNum && setMsgBox(messageData.applyNum);
+
             if (messageData.type === 'chat') {
                 layim.getMessage(messageData.data);
             } else if (messageData.type === 'onlineStatus') {
@@ -122,9 +127,11 @@ layui.use(['layim', 'jquery', 'contextMenu'], function () {
                     layim.getMessage(messageData.data[j]);
                 }
             } else if (messageData.type === 'msgBox') {
-                layim.msgbox(messageData.data.total);
+                setMsgBox(messageData.data.total);
             } else if (messageData.type === 'applyFriend') {
-                var userInfo = messageData.friendInfo;
+                lightTips(6, '【' + messageData.info.username + '】申请添加你为好友');
+            } else if (messageData.type === 'doApplyFriend') {
+                var userInfo = messageData.info;
                 if (parseInt(messageData.is_accept) === 1) {
                     layim.addList({
                         type: 'friend'
@@ -138,8 +145,8 @@ layui.use(['layim', 'jquery', 'contextMenu'], function () {
                 } else {
                     lightTips(5, '【' + userInfo.username + '】拒绝了你的好友申请');
                 }
-            } else if (messageData.type === 'applyGroup') {
-                var groupInfo = messageData.groupInfo;
+            } else if (messageData.type === 'doApplyGroup') {
+                var groupInfo = messageData.info;
                 if (parseInt(messageData.is_accept) === 1) {
                     layim.addList({
                         type: 'group'
@@ -168,19 +175,17 @@ layui.use(['layim', 'jquery', 'contextMenu'], function () {
         };
 
         ws.onclose = function (ev) {
-            reconnect();
+            getConnect();
         };
 
         ws.onerror = function (ev) {
-            reconnect();
+            getConnect();
             console.log(ev);
         };
 
         $.get(url_get_apply_num, function (res) {
             if (parseInt(res.code) === 200) {
-                if (parseInt(res.results.applyNum) !== 0) {
-                    layim.msgbox();
-                }
+                setMsgBox(res.results.applyNum);
             }
         });
         layui.ext.init(); //更新右键点击事件
@@ -527,9 +532,9 @@ layui.use(['layim', 'jquery', 'contextMenu'], function () {
     // });
 });
 
-
-function reconnect() {
-    ws = new WebSocket('ws://localhost:9501?uid=' + uid + '&_token=' + _token);
+// 获取 WebSocket 连接.
+function getConnect() {
+    ws = new WebSocket(url_ws + '?uid=' + uid + '&_token=' + _token);
 }
 
 /**
@@ -548,7 +553,7 @@ function send(data, is_obj) {
     var timeout = 0;
     var readyState = parseInt(ws.readyState);
     if (readyState === 2 || readyState === 3) {
-        reconnect();
+        getConnect();
         timeout = 1000;
     }
     setTimeout(function () {
@@ -560,6 +565,7 @@ function msg() {
     alert('124');
 }
 
+// 左下角提示（3s后消失）
 function lightTips(icon, msg) {
     layer.msg(msg, {
         time: 3,
@@ -570,4 +576,11 @@ function lightTips(icon, msg) {
             layer.close(index);
         }
     });
+}
+
+// 设置 消息盒子的消息数目
+function setMsgBox(num) {
+    if (parseInt(num) !== 0) {
+        layim.msgbox(parseInt(num));
+    }
 }

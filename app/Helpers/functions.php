@@ -142,6 +142,40 @@ function trim_params(&$data)
 }
 
 /**
+ * 判断是否为图片格式(jpg/jpeg/gif/png)文件
+ *
+ * @param string $filePath
+ * @return bool|string
+ */
+function isImg($filePath)
+{
+    if (!is_file($filePath)) {
+        return false;
+    }
+    $file = fopen($filePath, "rb");
+    $bin = fread($file, 2); // 只读2字节
+
+    fclose($file);
+    $strInfo = @unpack("C2chars", $bin);
+    $typeCode = intval($strInfo['chars1'] . $strInfo['chars2']);
+    switch ($typeCode) {
+        case 255216:
+            $fileType = 'jpg';
+            break;
+        case 7173:
+            $fileType = 'gif';
+            break;
+        case 13780:
+            $fileType = '13780';
+            break;
+        default:
+            $fileType = false;
+            break;
+    }
+    return $fileType;
+}
+
+/**
  * App server to WebSocket server
  *
  * @param array $data

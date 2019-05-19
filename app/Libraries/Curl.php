@@ -11,7 +11,7 @@ namespace App\Libraries;
 class Curl
 {
 
-    public static function post($url, $post = array(), $options = array(), &$errno = 0, &$httpcode = 0, &$error = "")
+    public static function post($url, $post = array(), $options = array())
     {
         $defaults = array(
             CURLOPT_POST => 1,
@@ -30,13 +30,13 @@ class Curl
         $ch = curl_init();
         curl_setopt_array($ch, ($options + $defaults));
         $result = curl_exec($ch);
-        $errno = curl_errno($ch);
-        if ($errno) {
-            $error = 'Curl error: ' . curl_error($ch) . ".";
+        $errNo = curl_errno($ch);
+        if ($errNo) {
+            $error = 'Curl error: ' . curl_error($ch).' .';
         }
-        $httpcode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-        if ($httpcode < 200 || $httpcode >= 300) {
-            $error .= "httpcode:" . $httpcode;
+        $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+        if ($httpCode < 200 || $httpCode >= 300) {
+            $error .= "httpCode:" . $httpCode;
         }
         curl_close($ch);
         return $result;
@@ -49,24 +49,28 @@ class Curl
      * @param array $options for cURL
      * @return string
      */
-    public static function get($url, array $get = array(), array $options = array(), &$errno = 0, &$httpcode = 0, &$error = "")
+    public static function get($url, array $get = array(), array $options = array())
     {
         $defaults = array(
             CURLOPT_URL => $url . (strpos($url, '?') === FALSE ? '?' : '') . http_build_query($get),
             CURLOPT_HEADER => 0,
             CURLOPT_RETURNTRANSFER => TRUE,
-            CURLOPT_TIMEOUT => 10
+            CURLOPT_TIMEOUT => 60,
+            CURLOPT_ENCODING => "",
+            CURLOPT_MAXREDIRS => 10,
+            CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
+            CURLOPT_CUSTOMREQUEST => "GET",
         );
         $ch = curl_init();
         curl_setopt_array($ch, ($options + $defaults));
         $result = curl_exec($ch);
-        $errno = curl_errno($ch);
-        if ($errno) {
-            $error = 'Curl error: ' . curl_error($ch);
+        $errNo = curl_errno($ch);
+        if ($errNo) {
+            $error = 'Curl error: ' . curl_error($ch).' .';
         }
-        $httpcode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-        if ($httpcode < 200 || $httpcode >= 300) {
-            $error .= "httpcode:" . $httpcode;
+        $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+        if ($httpCode < 200 || $httpCode >= 300) {
+            $error .= "httpCode:" . $httpCode;
         }
         curl_close($ch);
         return $result;

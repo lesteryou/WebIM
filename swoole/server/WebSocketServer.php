@@ -148,7 +148,7 @@ class WebSocketServer
             $response->end();
             return false;
         }
-        echo $request->header['sec-websocket-key'];
+
         $key = base64_encode(sha1(
             $request->header['sec-websocket-key'] . '258EAFA5-E914-47DA-95CA-C5AB0DC85B11',
             true
@@ -194,7 +194,7 @@ class WebSocketServer
 
         $response->status(101);
         $response->end();
-        echo "connected!" . PHP_EOL;
+        echo "[" . date('Y-m-d H:i:s') . "]: Client_uid [" . $uid ."] fd [" . $response->fd ."] (ws_key:". $request->header['sec-websocket-key'] . ") connected!" . PHP_EOL;
         return true;
     }
 
@@ -204,8 +204,8 @@ class WebSocketServer
      */
     public function onOpen(Server $server, $request)
     {
-        echo "server:handshake success with fd{$request->fd}\n";
-        $server->push($request->fd, $request->fd . ",Welcome!");
+        echo "[" . date('Y-m-d H:i:s') . "]: Server:handshake success with fd{$request->fd}\n";
+        $this->push($request->fd, $request->fd . ",Welcome!");
 //        var_dump(json_encode($request));
     }
 
@@ -215,7 +215,7 @@ class WebSocketServer
      */
     public function onMessage(Server $server, $frame)
     {
-        echo "receive from {$frame->fd}:\n{$frame->data} \nopcode:{$frame->opcode},fin:{$frame->finish}\n";
+        echo "[" . date('Y-m-d H:i:s') . "]: receive from {$frame->fd}:\n{$frame->data} \nopcode:{$frame->opcode},fin:{$frame->finish}\n";
 
         // 对请求的参数解析，验证。
         if (empty($frame->data)) return;
@@ -243,7 +243,7 @@ class WebSocketServer
                         'type' => 'sendError',
                         'message' => '发送失败，当前用户非法'
                     ];
-                    $server->push($from_fd, json_encode($result));
+                    $this->push($from_fd, json_encode($result));
                     return;
                 }
                 $uid = $userData['uid'];
@@ -272,7 +272,7 @@ class WebSocketServer
                                 'type' => 'sendError',
                                 'message' => '消息接受者不存在'
                             ];
-                            $server->push($from_fd, json_encode($result));
+                            $this->push($from_fd, json_encode($result));
                             return;
                         }
                         $to_fd = $to_obj->fd;
@@ -282,7 +282,7 @@ class WebSocketServer
                     if ($this->checkClientIsActive($to_fd)) {   // online message
                         $message_id = $this->privateMessage->add($uid, $to_id, $fromData['content'], 0);
                         $sendData['cid'] = $message_id;
-                        $server->push($to_fd, json_encode(['type' => 'chat', 'data' => $sendData]));
+                        $this->push($to_fd, json_encode(['type' => 'chat', 'data' => $sendData]));
                     } else {    // offline message
                         $this->privateMessage->add($uid, $to_id, $fromData['content'], 1, 1);
                     }
@@ -302,7 +302,7 @@ class WebSocketServer
                         $toMTData = $this->MT::table('user')->get($memberUid);
                         if ($toMTData && $this->checkClientIsActive($toMTData['fd'])) {
                             $this->groupMessage->addLink($message_id, $memberUid, $to_id, 0, 1);
-                            $server->push($toMTData['fd'], json_encode(['type' => 'chat', 'data' => $sendData]));
+                            $this->push($toMTData['fd'], json_encode(['type' => 'chat', 'data' => $sendData]));
                         } else {
                             $this->groupMessage->addLink($message_id, $memberUid, $to_id, 1, 0);
                         }
@@ -333,7 +333,7 @@ class WebSocketServer
                             'type' => 'onlineStatus',
                             'data' => ['uid' => $userData['uid'], 'status' => $statusString]
                         ];
-                        $server->push($friendData['fd'], json_encode($sendData));
+                        $this->push($friendData['fd'], json_encode($sendData));
                     }
                 }
 
@@ -356,7 +356,7 @@ class WebSocketServer
                     ];
                 }
                 if (!empty($messageList)) {
-                    $server->push($from_fd, json_encode(['type' => 'offlineMessage', 'data' => $messageList]));
+                    $this->push($from_fd, json_encode(['type' => 'offlineMessage', 'data' => $messageList]));
                 }
                 break;
 
@@ -365,7 +365,7 @@ class WebSocketServer
                 break;
 
         }
-//        $server->push($frame->fd, "this is server");
+//        $this->push($frame->fd, "this is server");
     }
 
 
@@ -410,17 +410,17 @@ class WebSocketServer
              * 处理 App server 发起的请求。
              */
             $operationType = $postData['type'];
-            $apply_uid = $postData['apply_uid'];
+            $apply_uid = $postData['receiver_uid'];
             $apply_info = $this->MT::table('user')->get($apply_uid);
             switch ($operationType) {
                 case 'applyFriend':
+                case 'doApplyFriend':
                     if (!$apply_info) break;
-                    echo json_encode($postData);
-                    $this->server->push($apply_info['fd'], json_encode($postData));
+                    $this->push($apply_info['fd'], json_encode($postData));
                     break;
                 case 'applyGroup':
                     if (!$apply_info) break;
-                    $this->server->push($apply_info['fd'], json_encode($postData));
+                    $this->push($apply_info['fd'], json_encode($postData));
                     // 获取组员ID.
                     $memberTMList = $this->MT::table('groupMembers')->get($postData['groupInfo']['id']);
                     $memberIDArr = explode(',', $memberTMList['members']);
@@ -436,14 +436,14 @@ class WebSocketServer
                             continue;
                         }
                         $userInfo = $this->MT::table('user')->get($userID);
-                        $this->server->push($userInfo['fd'], json_encode($sendData));
+                        $this->push($userInfo['fd'], json_encode($sendData));
                     }
                     break;
                 default:
                     break;
             }
         }
-        echo $method = $_SERVER['request_method'];
+        echo "[" . date('Y-m-d H:i:s') . "]: Receive from App server[{$method}]:\n" . json_encode($postData)."\n";
         $response->end(json_encode(['code' => 200]));
         return true;
     }
@@ -471,7 +471,17 @@ class WebSocketServer
      */
     public function onClose(Server $server, $fd)
     {
-        echo "client {$fd} closed\n";
+        echo "[" . date('Y-m-d H:i:s') . "]: Client [$fd] is closed\n";
+    }
+
+
+    public function push($fd, $data)
+    {
+        if ($this->checkClientIsActive($fd)) {
+            $this->server->push($fd, $data);
+        } else {
+            echo "[" . date('Y-m-d H:i:s') . "]: Client [{$fd}] is closed\n";
+        }
     }
 
 }

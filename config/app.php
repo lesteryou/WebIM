@@ -3,7 +3,7 @@
 /**
  * Database setting
  */
-$database = require_once __DIR__ . '/database.php';
+//$database = require_once __DIR__ . '/database.php';
 
 return [
     'settings' => [

@@ -43,8 +43,10 @@ class FrontController extends Controller
         }
         $uid = session('userInfo')->id;
         $_token = session('userInfo')->_token;
-        $cookieValue = 'uid=' . $uid . ';_token=' . $_token;
-        $response->withHeader('Set-Cookie', $cookieValue);
+//        $cookieValue = 'uid=' . $uid . ';_token=' . $_token;
+//        $response->withHeader('Set-Cookie', $cookieValue);
+        setcookie('uid', $uid);
+        setcookie('_token', $_token);
         return $this->view->render($response, 'main.html', ['uid' => $uid, '_token' => $_token]);
     }
 

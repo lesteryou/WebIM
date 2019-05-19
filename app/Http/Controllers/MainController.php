@@ -110,6 +110,7 @@ class MainController extends Controller
         $Apply = new Apply();
         $applyData = $Apply->getApplyInfo($formData['apply_id']);
         $responseData = [];
+        $applyNum = $Apply->getApplyNum($applyData->friend_uid);
         if ($applyData->type == 1) {      // 添加好友
             if ($applyData->friend_uid != session('userInfo')->id) {
                 TEA('643');     // 提交数据的异常，刷新页面
@@ -120,10 +121,11 @@ class MainController extends Controller
                 $User = new User();
                 $friendInfo = $User->getUserInfo($applyData->friend_uid);
                 $sendData = [
-                    'type' => 'applyFriend',
+                    'type' => 'doApplyFriend',
                     'is_accept' => 1,
-                    'apply_uid' => $applyData->applicant_uid,
-                    'friendInfo' => [
+                    'receiver_uid' => $applyData->applicant_uid,
+                    'applyNum' => $applyNum,
+                    'info' => [
                         'id' => $friendInfo->id,
                         'username' => $friendInfo->nickname,
                         'avatar' => $friendInfo->profile_photo,
@@ -151,10 +153,11 @@ class MainController extends Controller
                 $User = new User();
                 $friendInfo = $User->getUserInfo($applyData->friend_uid);
                 $sendData = [
-                    'type' => 'applyFriend',
+                    'type' => 'doApplyFriend',
                     'is_accept' => 0,
-                    'apply_uid' => $applyData->applicant_uid,
-                    'friendInfo' => [
+                    'receiver_uid' => $applyData->applicant_uid,
+                    'applyNum' => $applyNum,
+                    'info' => [
                         'id' => $friendInfo->id,
                         'username' => $friendInfo->nickname,
                         'avatar' => $friendInfo->profile_photo,
@@ -183,10 +186,11 @@ class MainController extends Controller
                 $Apply->doApplyByApply($formData['apply_id'], $applyData);
                 // 推送
                 $sendData = [
-                    'type' => 'applyGroup',
+                    'type' => 'doApplyGroup',
                     'is_accept'=>1,
-                    'apply_uid' => $applyData->applicant_uid,
-                    'groupInfo' => [
+                    'receiver_uid' => $applyData->applicant_uid,
+                    'applyNum' => $applyNum,
+                    'info' => [
                         'id' => $groupInfo->id,
                         'group_name' => $groupInfo->name,
                         'avatar' => $groupInfo->image
@@ -197,11 +201,11 @@ class MainController extends Controller
                 $Apply->doNotApplyByApply($formData['apply_id'], $formData['remark']);
                 // 推送
                 $sendData = [
-                    'type' => 'applyFriend',
+                    'type' => 'doApplyGroup',
                     'is_accept'=>0,
-                    'apply_uid' => $applyData->applicant_uid,
-                    'apply_name' => $applyData->applicant_uid,
-                    'groupInfo' => [
+                    'receiver_uid' => $applyData->applicant_uid,
+                    'applyNum' => $applyNum,
+                    'info' => [
                         'id' => $groupInfo->id,
                         'group_name' => $groupInfo->name,
                         'avatar' => $groupInfo->image

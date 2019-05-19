@@ -39,7 +39,7 @@ class FriendController extends Controller
     public function search(Request $request, Response $response, $args)
     {
         $queryData = $request->getQueryParams();
-        if (empty($queryData['value'])) $queryData['value']='';
+        if (empty($queryData['value'])) $queryData['value'] = '';
         $queryData['page'] = isset($queryData['page']) ? $queryData['page'] : 1;
         $queryData['pageSize'] = isset($queryData['pageSize']) ? $queryData['pageSize'] : 9;
         trim_params($queryData);
@@ -73,17 +73,19 @@ class FriendController extends Controller
         $insertID = $Friend->apply($formData);
 
         // 让WebSocket 推送给被申请者，是否同意添加
-        $applyNum = (new Apply())->getApplyNum(session('userInfo')->id);
-        $reqData = [
-            'apply_id'=>$insertID,
-            'apply_uid' => session('userInfo')->id,
-            'friend_uid' => $formData['friend_uid'],
-            'remark' => $formData['remark'],
+        $applyNum = (new Apply())->getApplyNum($formData['friend_uid']);
+        $sendData = [
             'type' => 'applyFriend',
-            '_token' => '1234567890',
-            'applyNum'=>$applyNum
+            'receiver_uid' => $formData['friend_uid'],
+            'applyNum' => $applyNum,
+            'info' => [
+                'apply_id' => $insertID,
+                'apply_name' => session('userInfo')->nickname,
+                'friend_uid' => $formData['friend_uid'],
+                'remark' => $formData['remark'],
+            ],
         ];
-        Curl::post('http://localhost:9501', $reqData);
+        sendToWS($sendData);
         return $response->withJson(ASS(['id' => $insertID]));
     }
 }

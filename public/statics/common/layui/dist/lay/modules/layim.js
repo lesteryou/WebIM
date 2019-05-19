@@ -1072,7 +1072,7 @@ layui.define(['layer', 'laytpl', 'upload'], function (exports) {
         if (data.type === 'friend') {
             var li = listElem.find('>li').eq(data.groupIndex);
             li.find('.layui-layim-list').append(list);
-            li.find('.layim-count').html(cache.friend[data.groupIndex].list.length); //刷新好友数量
+            li.find('.layim-count').html(cache.friend[data.groupIndex]?cache.friend[data.groupIndex].list.length:0); //刷新好友数量
             //如果初始没有好友
             if (li.find('.layim-null')[0]) {
                 li.find('.layim-null').remove();
